@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>map</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <link rel="stylesheet" href="/css/normalize.min.css">
+    <!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-1.0.0-b1/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-1.0.0-b1/leaflet.js"></script>-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="/css/leaflet.photon.css" />
+    <link rel="stylesheet" href="/css/FindAndGo.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    
+    <!-- Photon search : https://github.com/komoot/leaflet.photon -->
+    <script type="text/javascript" src="/js/leaflet.photon.js"></script>
+    <script type="text/javascript" src="/js/GHUtil.js"></script>
+    <script type="text/javascript" src="/js/FindAndGo.js"></script>
+
+    <style>
+    </style>
+</head>
+
+<body>
+    <div>
+        <div class="container">
+            <h2 style="margin-left: 340px ;"> Checker les visites aux monuments</h2>
+
+
+        </div>
+         <table>
+    <tr>
+ 
+  <td><a href="monuments" class="btn btn-sm btn-primary"> Monuments</a><br/></td>
+  <td><a href="etudiants" class="btn btn-sm btn-primary">Espaces Touristes</a><br/><td/>
+</tr>
+</table>
+
+        <div id="map"></div>
+        <div id="FindAndGo">
+            <div class="FaG">
+            </div>
+
+
+
+
+        </div>
+
+
+
+    </div>
+
+    <% if (etudiant) { %>
+        <script>
+           var etudiant = <%- JSON.stringify(etudiant) %>;
+        </script>
+     <% } %>
+
+
+    <script>
+        var osmLayer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+        var hyddaLayer = L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+            attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+
+        var map = L.map("map", {
+            layers: [osmLayer],
+            //center: [47.215, -1.555],
+            center: [31.792306, -7.080168],
+            zoom: 6
+        });
+        L.control.scale({ imperial: false }).addTo(map);
+
+
+
+
+        var layerControl = L.control.layers({
+            "OpenStreetMap": osmLayer,
+            "Hydda": hyddaLayer
+        });
+        layerControl.addTo(map);
+        var greenIcon = L.icon({
+            iconUrl: '/img/anas.png',
+            shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png',
+
+            iconSize: [38, 95], // size of the icon
+            shadowSize: [50, 64], // size of the shadow
+            iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+            shadowAnchor: [4, 62],  // the same for the shadow
+            popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+        });
+        const marker = new Array();
+        const circle = new Array();
+        var i=0;
+        etudiant.forEach(function(e){
+        marker[i] =L.marker([e.longitude, e.latitude], {icon: greenIcon}).addTo(map);
+        var popupContent = "C'EST "+e.nom;
+
+        marker[i].bindPopup(popupContent).openPopup();
+        
+        marker[i].on('click', function(e) {
+           if ( L.DomUtil.get("FaG-lat").value ==e.latlng.lat) {
+            console.log("valid");
+            var outputAddress = L.DomUtil.get("FaG-address");
+            outputAddress.innerHTML = '<br>VALID<br>';
+        }else {
+                console.log("invalid");
+                var outputAddress = L.DomUtil.get("FaG-address");
+                outputAddress.innerHTML = '<br>INVALID<br>';
+            };
+           
+          console.log(e.latlng);
+            });
+
+        circle[i]=L.circle([e.longitude, e.latitude], {radius: 1000}).addTo(map);
+        var popupContent2 = "la zone d 1km autour du monument";
+        circle[i].bindPopup(popupContent2).openPopup();
+        i=i+1;
+        });
+        new FindAndGo("FindAndGo", map, {
+            layerControl: layerControl,
+            graphhopperApiKey: "717128f9-8ffb-43b9-8e4b-9c703eb94076"
+
+
+
+
+
+
+        });
+    </script>
+
+</body>
+
+</html>
+<style>
+
+
+    html {
+    color: #c22626;
+    background-color: rgb(158 255 158 / 60%);
+    font-size: em;
+    line-height: 1.4;
+}
+.leaflet-container a {
+    color: #00b6ff;
+}
+
+
+#map {
+    height: 600px;
+    width: 70px;
+    width: calc(100% - 443px);
+    border: 2px dotted blue;
+    border-radius: 5px;
+    float: left;
+    margin-top: 10px;
+    margin-left: 10px;
+    top: 330px;
+    left: 230px;
+}
+ 
+
+ .FaG {
+    background-color: darkturquoise;
+    border: 2px solid #777;
+    box-shadow: 0 0 15px rgb(0 0 0 / 20%);
+    border-radius: 5px;
+    padding: 0 10px;
+    font: 15px Arial, Helvetica, sans-serif;
+    color: #555;
+    left: 400px;
+    position: absolute;
+    width: 550px;
+    
+}
+
+
+body {
+    margin: 0;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: white;
+    text-align: left;
+    background-color: #005a3a;
+}
+
+.leaflet-touch .leaflet-control-layers-toggle {
+    width: 15px;
+    height: 15px;
+}
+    </style>
